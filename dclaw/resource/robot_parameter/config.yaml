@@ -1,0 +1,37 @@
+# config.yaml
+
+dynamixel:
+  ids: [10,11,12,20,21,22,30,31,32]  # 사용하고자 하는 Dynamixel ID 리스트
+  # ids: [10,11,12]  # 사용하고자 하는 Dynamixel ID 리스트
+  device_name: "/dev/ttyUSB0"
+  baudrate: 57600
+  protocol_version: 2.0
+  torque_enable: 1
+  torque_disable: 0
+  moving_status_threshold: 20
+
+  control_modes: # https://emanual.robotis.com/docs/en/dxl/x/xh430-w350/#operating-mode
+    current_control_mode: 0
+    velocity_control_mode: 1 
+    position_control_mode: 3
+    extended_position_control_mode: 4
+    current_based_position_control_mode: 5 
+    pwm_control_mode: 16
+    torque_control_mode: 100 # WARNING : deprecated(maybe)
+    multi_turn_mode: 101     # WARNING : deprecated(maybe)
+    default_mode: 0  # select above one 
+
+  control_table: # for X or MX series (see dynamixel wizard 2.0 )
+    addr_torque_enable: 64
+    ADDR_GOAL_CURRENT: 102
+    ADDR_GOAL_POSITION: 116
+    ADDR_PRESENT_VELOCITY: 128
+    ADDR_PRESENT_POSITION: 132
+    addr_operating_mode: 11
+
+  position:
+    min_position: 0
+    max_position: 4095
+
+  current:
+    max_current: 10 # 2047

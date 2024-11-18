@@ -1,0 +1,7 @@
+# Constants
+# Request
+uint8[] ids
+float64[] positions
+---
+# Response
+float64[] positions
