@@ -24,13 +24,13 @@ class MinimalService(Node) :
         self.controller.connect()
         print("connected")
         # self.srv = self.create_service(GetPosition, 'get_position', self.get_present_pos)
-        # self.client = self.create_client(SetPositions, "set_positions")
+        self.client = self.create_client(SetPositions, "set_positions")
 
         while not self.client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
             pass
         print('server is ok')
-        # self.req = SetPositions.Request()
+        self.req = SetPositions.Request()
 
 
         self.subscription = self.create_subscription(
