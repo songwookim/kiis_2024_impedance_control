@@ -8,11 +8,14 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 
+# add !
 find_package(rosidl_default_generators REQUIRED)
 set(msg_files
   # "msg/SetPosition.msg"
   "msg/SetPositions.msg"
+  "msg/GetSensordata.msg"
 )
+
 set(srv_files
   "srv/GetPositions.srv"
   "srv/SetPositions.srv"
@@ -20,6 +23,7 @@ set(srv_files
 )
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SetPositions.msg"
+  "msg/GetSensordata.msg"
   "srv/GetPositions.srv"
   "srv/SetPositions.srv"
   "srv/SetPosition.srv"

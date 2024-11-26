@@ -1,0 +1,12 @@
+defaults:
+  - _self_
+
+mms101:
+  dest_ip: "192.168.0.200"
+  dest_port: 1366
+  src_port: 2000
+  measure_max: 10000
+  sensors: [1, 2, 3]  # 센서 번호 리스트 (1, 2, 3, 4, 5 중 선택)
+  debug: false
+  n_samples : 10
+  n_sensors : 3

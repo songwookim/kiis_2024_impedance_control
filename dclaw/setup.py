@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             'dclaw_sim = dclaw.dclaw_sim:main',# added
             'dclaw_real = dclaw.dclaw_real:main',# added
+            'sensor_real = dclaw.sensor_real:main',# added
         ],
     },
 )

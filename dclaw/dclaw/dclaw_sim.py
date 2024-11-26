@@ -26,7 +26,14 @@ class MinimalService(Node) :
         # self.get_logger() or  Node.get_logger(self).info('\n\nhello world 3 !!\n\n')
 
         self.srv = self.create_service(SetPositions, 'set_positions', self.get_present_pos)
+        # self.msg = self.create_service(GetSensordata, 'get_sensordata', self.get_present_sensordata)
 
+    # def get_present_sensordata(self, req, res):
+    #     global positions_deg
+        
+    #     res.positions = positions_deg
+    #     return res
+    
     def get_present_pos(self, req, res):
         global positions_deg
         
@@ -53,8 +60,7 @@ def simulate():
     # mj_path = mujoco_py.utils.discover_mujoco()
     pkg_path = os.  path.dirname(os.path.abspath(__name__)) # ~/<pkg_path>
     xml_path = pkg_path+'/src/dclaw/resource/robel_sim/dclaw/dclaw3xh.xml'
-    # xml_path = os.path.join( xml_path)
-    # '/home/songwoo/.mujoco/mujoco210/model/robel_sim/dclaw/dclaw3xh.xml'   => install mujoco210
+    
     model = mj.MjModel.from_xml_path(xml_path)    
     data = mj.MjData(model)
 
@@ -66,17 +72,8 @@ def simulate():
 
             # os.system('clear')
             for idx, position_deg in enumerate(positions_deg) :
-                # print(f'{idx}, {position_deg}')
                 data.ctrl[idx] = position_deg
-                # data.ctrl[1] = 90   # actuator ID 11
-                # data.ctrl[2] = 90   # actuator ID 12
-                # data.ctrl[3] = 180 # actuator ID 20  (actuactor degree which is abs(45) bounded by .mjcf)
-                # data.ctrl[4] = math.cos(t / 10.) * 0.1 # actuator ID 21
-                # data.ctrl[5] = math.sin(t / 10.) * 0.1 # actuator ID 22
-                # data.ctrl[6] = math.cos(t / 10.) * 0.1 # actuator ID 30
-                # data.ctrl[7] = math.sin(t / 10.) * 0.1 # actuator ID 31
-                # data.ctrl[8] = math.sin(t / 10.) * 0.1
-                #  # actuator ID 32
+
             
         # t += 1
         # sim.step(t)
@@ -85,17 +82,20 @@ def simulate():
         #     break
 
 def read_write_py_node():
-    
-    rclpy.init(args=None)
-    t1 = threading.Thread(target=ros)
-    t2 = threading.Thread(target=simulate)
-    t1.start()
-    t2.start()
-
+    try :
+        rclpy.init(args=None)
+        t1 = threading.Thread(target=ros)
+        t2 = threading.Thread(target=simulate)
+        t1.start()
+        t2.start()
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt")
+        rclpy.shutdown()
+        t1.join()
+        t2.join()
 
 
 def main():
-    
     read_write_py_node()
 
 

@@ -8,5 +8,7 @@
         "/home/hanlab/workspace/kiis_2024/install/dclaw_sim/lib/python3.10/site-packages",
         "/opt/ros/humble/lib/python3.10/site-packages",
         "/opt/ros/humble/local/lib/python3.10/dist-packages"
-    ]
+    ],
+    "ros.distro": "humble",
+    "cmake.ignoreCMakeListsMissing": true
 }
