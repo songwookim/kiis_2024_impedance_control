@@ -44,9 +44,8 @@ def main(config):
         rclpy.spin(minimal_publisher)
     except KeyboardInterrupt:
         print("KeyboardInterrupt")    
-
-    minimal_publisher.destroy_node()
-    rclpy.shutdown() # 4
+        minimal_publisher.destroy_node()
+        rclpy.shutdown() # 4
 
 
 if main == "__main__":

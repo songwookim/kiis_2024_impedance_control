@@ -19,7 +19,7 @@ class MinimalService(Node) :
         super().__init__('dclaw_read_py_node')
         self.cfg = cfg
         self.cur_deg = None
-        self.sensordata = np.zeros([3,6])
+        self.sensordata = np.zeros(18)
         self.controller = DynamixelControl(self.cfg.dynamixel)
         self.controller.connect()
         print("connected")
@@ -47,8 +47,10 @@ class MinimalService(Node) :
     def send_request(self, idx, cur_joint_pos_rad):
         self.req.ids = idx
         self.req.positions = cur_joint_pos_rad.tolist()
+        # print(f"\nsensordata : {self.sensordata}\n\n")
+        self.req.sensordata = self.sensordata.flatten().tolist()
         self.future = self.client.call_async(self.req)
-            
+        
         rclpy.spin_until_future_complete(self, self.future)
 
         return self.future.result()
@@ -56,17 +58,17 @@ class MinimalService(Node) :
     def ros(self):
         while True :
             cur_deg = self.controller.get_joint_positions("rad")
-            # print(f"current position :\n\n {cur_deg} \n\n")
-            cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
             
+            cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
             response = self.send_request(self.cfg.dynamixel.ids, cur_deg_rad)
-            torques = np.multiply(response.torques,100)
+            # print(f"current position :\n\n {response.timestamp} \n\n")
+            torques = np.multiply(response.torques,2)
             if response.timestamp > 5000 :
                 # self.controller.test_torqueinput(response.torques, 0)
                 # print(f"\n\n res : {response.torques}")
                 print(f"\nres : {(np.int64(torques).tolist())}\n\n")
-                # self.controller.test_torqueinput((np.int64(torques)))
-                self.controller.test_torqueinput(np.int64(np.zeros(9)))
+                self.controller.test_torqueinput((np.int64(torques)))
+                # self.controller.test_torqueinput(np.int64(np.zeros(9)))
                 
             # self.cur_deg = cur_deg
 
@@ -80,15 +82,20 @@ class MinimalService(Node) :
     def listener_callback(self, msg = GetSensordata): # Sensor
         """토픽 콜백"""
         # self.controller.enable_torque()
-        self.sensordata = msg.sensordata
-        print(f"version : 11 \n")
+    
+        self.sensordata = np.array(list(msg.sensordata))
+        # print(f"version : 11 {self.sensordata }\n")
         # self.controller.test_torqueinput([31,21,11], 0)
         # self.controller.test_torqueinput([21], 12)
         # self.controller.test_torqueinput([31], 11)
         # self.controller.test_torqueinput([11], 11)
-        # # print(f"sensordata : {sensordata}")
+        # print(f"sensordata : {sensordata}")
+        
         # for i in [0,1,2] :
-        #     self.get_logger().info(f"Sensor {i+1}: {sensordata[i-1:i+7]} \n")
+        #     print(f"Sensor1 {self.sensordata[0:7]} \n")
+        #     print(f"Sensor2 {self.sensordata[6:12]} \n")
+        #     print(f"Sensor3 {self.sensordata[11:17]} \n")
+            
         
 def dclaw_read_py_node(cfg):
     rclpy.init(args=None)

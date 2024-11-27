@@ -183,7 +183,7 @@ class DynamixelControl:
             else:
                 print(f"Torque disabled for Dynamixel ID {id}")
                 
-    def test_torqueinput(self, input_torque):
+    def test_torqueinput(self, input_torque, log=False):
         ADDR_GOAL_CURRENT = self.cfg.control_table.ADDR_GOAL_CURRENT
         for idx,id in enumerate(self.cfg.ids):
             # print(idx)
@@ -197,9 +197,10 @@ class DynamixelControl:
             elif dxl_error != 0:
                 raise Exception(f"Dynamixel error: {self.packetHandler.getRxPacketError(dxl_error)}")
             else:
-                print(f"Torque written for Dynamixel ID {id}")
+                if log:
+                    print(f"Torque written for Dynamixel ID {id}")
     
-    def test_torqueinput_one(self, id, input_torque):
+    def test_torqueinput_one(self, id, input_torque, log = False):
         ADDR_GOAL_CURRENT = self.cfg.control_table.ADDR_GOAL_CURRENT
         print(f"\n\n{id}\n\n")
         dxl_comm_result, dxl_error = self.packetHandler.write2ByteTxRx(
@@ -209,7 +210,8 @@ class DynamixelControl:
         elif dxl_error != 0:
             raise Exception(f"Dynamixel error: {self.packetHandler.getRxPacketError(dxl_error)}")
         else:
-            print(f"Torque written for Dynamixel ID {id}")
+            if log:
+                print(f"Torque written for Dynamixel ID {id}")
     def close_port(self):
         self.disable_torque()
         self.portHandler.closePort()
