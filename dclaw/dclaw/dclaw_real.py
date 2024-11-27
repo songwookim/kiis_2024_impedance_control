@@ -45,9 +45,6 @@ class MinimalService(Node) :
 
 
     def send_request(self, idx, cur_joint_pos_rad):
-        # print(cur_joint_pos_rad)
-        # for idx, id in enumerate(DXL_IDs) :
-        # print(self.req)
         self.req.ids = idx
         self.req.positions = cur_joint_pos_rad.tolist()
         self.future = self.client.call_async(self.req)
@@ -57,20 +54,25 @@ class MinimalService(Node) :
         return self.future.result()
     
     def ros(self):
-        
         while True :
-            
             cur_deg = self.controller.get_joint_positions("rad")
             # print(f"current position :\n\n {cur_deg} \n\n")
             cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
             
             response = self.send_request(self.cfg.dynamixel.ids, cur_deg_rad)
-            print(f"\n\n res : {response.positions}\n\n")
+            torques = np.multiply(response.torques,100)
+            if response.timestamp > 5000 :
+                # self.controller.test_torqueinput(response.torques, 0)
+                # print(f"\n\n res : {response.torques}")
+                print(f"\nres : {(np.int64(torques).tolist())}\n\n")
+                # self.controller.test_torqueinput((np.int64(torques)))
+                self.controller.test_torqueinput(np.int64(np.zeros(9)))
+                
             # self.cur_deg = cur_deg
 
-    def move_topic_listener(self, msg = None):
-        # self.controller.disable_torque()
-        pass
+    # def move_topic_listener(self, msg = None):
+    #     # self.controller.disable_torque()
+    #     pass
         
 
         
@@ -80,7 +82,7 @@ class MinimalService(Node) :
         # self.controller.enable_torque()
         self.sensordata = msg.sensordata
         print(f"version : 11 \n")
-        self.controller.test_torqueinput([31,21,11], 0)
+        # self.controller.test_torqueinput([31,21,11], 0)
         # self.controller.test_torqueinput([21], 12)
         # self.controller.test_torqueinput([31], 11)
         # self.controller.test_torqueinput([11], 11)
@@ -93,10 +95,10 @@ def dclaw_read_py_node(cfg):
     minimal_service = MinimalService(cfg)
     t1 = threading.Thread(target=minimal_service.ros)
     t2 = threading.Thread(target=minimal_service.listener_callback)
-    t3 = threading.Thread(target=minimal_service.move_topic_listener)
+    # t3 = threading.Thread(target=minimal_service.move_topic_listener)
     t1.start()
     t2.start()
-    t3.start()
+    # t3.start()
 
 @hydra.main(version_base=None, config_path= os.path.dirname(os.path.abspath(__name__))+"/src/dclaw/resource/robot_parameter", config_name="config")
 def main(cfg: DictConfig):

@@ -1,6 +1,6 @@
 <mujocoinclude>
   <compiler angle="radian" inertiafromgeom="auto" inertiagrouprange="3 5"/>
-  <option timestep="0.0025" iterations="50" tolerance="1e-10" solver="Newton" jacobian="dense" cone="elliptic"/>
+  <option timestep="0.0001" iterations="50" tolerance="1e-10" integrator="RK4" jacobian="dense" cone="elliptic"/>
   <asset>
     <mesh name="xh28" file="../dclaw/meshes/xh_base_high_poly.stl" scale=".001 .001 .001"/>
     <mesh name="acrylic_circle" file="../dclaw/meshes/acrylic_circle.stl" scale=".1 .1 .1"/>
@@ -69,5 +69,7 @@
     <jointvel name="THJ30_velocity_sensor" joint="THJ30"/>
     <jointvel name="THJ31_velocity_sensor" joint="THJ31"/>
     <jointvel name="THJ32_velocity_sensor" joint="THJ32"/> -->
+    <force name="ft_sensor_force" site="FFtip"/>
+    <torque name="ft_sensor_torque" site="FFtip"/>
   </sensor>
 </mujocoinclude>

@@ -11,6 +11,7 @@
   <depend>rclpy</depend>
   <depend>mujoco</depend>
   <depend>mujoco_py</depend>
+  <depend>matplotlib</depend>
   <exec_depend>dclaw_interfaces</exec_depend>
 
 
