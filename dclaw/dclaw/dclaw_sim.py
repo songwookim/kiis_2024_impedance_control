@@ -68,13 +68,15 @@ class MinimalService(Node) :
         #Init parameters
         jacp = np.zeros((3,3, self.model.nv)) #translation jacobian (NUMBER OF JOINT x NUM_OF_ACTUATORS)
         jacr = np.zeros((3,3, self.model.nv)) #rotational jacobian
-
-        #Parameter ---------------------------------------------
-        desired_stiffness = [[500, 0, 0],[0, 500, 0],[0, 0, 500]]
-        desired_damping = [[3, 0, 0],[0, 3, 0],[0, 0, 3]]
-        desired_inertia = np.eye(3) * 0.01 # compare 1 with 30
+        #-------------------------------------------Parameter ---------------------------------------------
+        desired_stiffness = [[1000, 0, 0],[0, 1000, 0],[0, 0, 1000]]
+        desired_damping = np.eye(3) 
+        desired_inertia = np.eye(3) * 0.02 # compare 1 with 30
         sensor_constant = 2.5
-        # ---------------------------------------------
+        kp = 1000
+        kd = 0.1
+        pd_flag = False
+        # -------------------------------------------------------------------------------------------------
         #Get error.
         end_effector_id = []
         end_effector_id.append(self.model.body('FFL12').id)
@@ -112,6 +114,7 @@ class MinimalService(Node) :
                 F_imp = np.zeros([1,9])
                 self.timestamp += 1
                 tau_imp = 0
+                tau_pd = 0
                 for idx, tip in enumerate(tips):
                     x_error = np.subtract(self.data.site(tip).xpos, goals[idx])
                     
@@ -142,9 +145,16 @@ class MinimalService(Node) :
                     Md_inv = np.linalg.inv(desired_inertia) 
 
                     f_ext = np.multiply(self.sensordata[idx][0:3],sensor_constant)#data.sensor("ft_sensor_force").self.data.copy() * 0
+                    # print(f"\n\n\{(jacp.T).shape}\n\n\n")    
+                    tau_pd += jacp[idx, :].T@(kp*x_error + kd*xvel)
                     tau_imp += M@j_inv@(Md_inv@(f_ext-desired_damping@xvel-desired_stiffness@x_error)+0-Jacp_dot@self.data.qvel)+c+0-jacp[idx,:].T@f_ext
-                print(f"\n\n\{np.round(jacp[1,0:3].T@f_ext,4)}\n\n\n")
-                self.torques = tau_imp
+
+                # print(f"\n\n\{np.round(jacp[1,0:3].T@f_ext,4)}\n\n\n")
+                # print(f"\n\n\{tau_pd.shape}\n\n\n")
+                if pd_flag == True:
+                    self.torques = -tau_pd
+                else :
+                    self.torques = tau_imp
                 # for deg in self.positions_deg:
                 #     print(deg)
                 self.data.ctrl = self.positions_deg
@@ -154,7 +164,7 @@ class MinimalService(Node) :
                 with viewer.lock():
                     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = 1
 
-                # force_list.append(self.data.sensor("ft_sensor_force").self.data.copy())
+                force_list.append(f_ext)
                 f_imp_list.append(tau_imp)
                 #Step the simulation.
                 mj.mj_step(self.model, self.data)
