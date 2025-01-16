@@ -13,6 +13,7 @@ import tty
 import termios
 from dclaw.dynamixel_control import DynamixelControl
 import numpy as np
+# import torch 
 
 class MinimalService(Node) :
     def __init__(self, cfg):
@@ -56,30 +57,28 @@ class MinimalService(Node) :
         return self.future.result()
     
     def ros(self):
-        while True :
+        while True :        
+            print("ros")
             cur_deg = self.controller.get_joint_positions("rad")
             
             cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
             response = self.send_request(self.cfg.dynamixel.ids, cur_deg_rad)
             # print(f"current position :\n\n {response.timestamp} \n\n")
-            # torques = np.multiply(response.torques,2)
-            torques = np.multiply(response.torques,2)
+            torques = np.multiply(response.torques,9)
             if response.timestamp > 5000 :
                 # self.controller.test_torqueinput(response.torques, 0)
                 print(f"\n\n res : {response.torques}")
                 print(f"\nres : {(np.int64(torques).tolist())}\n\n")
                 
-                # self.controller.test_torqueinput((np.int64(torques)))
-                self.controller.test_torqueinput(np.int64(np.zeros(9)))
+                self.controller.test_torqueinput((np.int64(torques)))
+                
+                # self.controller.test_torqueinput(np.int64(np.zeros(9)))
                 
             # self.cur_deg = cur_deg
 
     # def move_topic_listener(self, msg = None):
     #     # self.controller.disable_torque()
     #     pass
-        
-
-        
         
     def listener_callback(self, msg = GetSensordata): # Sensor
         """토픽 콜백"""

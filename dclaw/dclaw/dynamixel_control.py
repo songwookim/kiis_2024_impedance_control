@@ -186,10 +186,10 @@ class DynamixelControl:
     def test_torqueinput(self, input_torque, log=False):
         ADDR_GOAL_CURRENT = self.cfg.control_table.ADDR_GOAL_CURRENT
         for idx,id in enumerate(self.cfg.ids):
-            # print(idx)
-            # if abs(input_torque.any()) >= 10 :
-            #     print(f"Torque input is too high")
-            #     return
+            print(idx)
+            if abs(input_torque.any()) >= 10 :
+                print(f"Torque input is too high")
+                return
             dxl_comm_result, dxl_error = self.packetHandler.write2ByteTxRx(
                 self.portHandler, id, ADDR_GOAL_CURRENT, input_torque[idx])
             if dxl_comm_result != COMM_SUCCESS:
