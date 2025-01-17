@@ -41,7 +41,8 @@ class MinimalService(Node) :
         self.torques = np.array([.0, .0, .0, .0, .0, .0, .0, .0, .0],dtype=float) # 10 11 12 20 21 22 30 31 32
         self.timestamp = 0
         self.sensordata = np.zeros([3,6]).tolist()
-        # self.model.opt.timestep = 0.005  # 더 긴 시뮬레이션 시간 간격
+        self.dt = 0.005
+        self.model.opt.timestep = self.dt  # 더 긴 시뮬레이션 시간 간격
 
     # def get_present_sensordata(self, req, res):
     #     global positions_deg
@@ -73,7 +74,7 @@ class MinimalService(Node) :
     def simulate(self):
   
         goals = [[0., .0, 0.1],[0., .0, 0.1],[0., .0, 0.1]] #Desire position 2
-        dt = 0.0025
+        
         damping = 0.25
         #Init parameters
         jacp = np.zeros((3,3, self.model.nv)) #translation jacobian (NUMBER OF JOINT x NUM_OF_ACTUATORS)
@@ -86,7 +87,7 @@ class MinimalService(Node) :
         sensor_constant = 2.5
         kp = 250
         kd = 1
-        pd_flag = False
+        pd_flag = True
 
         # -------------------------------------------------------------------------------------------------
         #Get error.
@@ -142,12 +143,12 @@ class MinimalService(Node) :
                         j_inv = np.linalg.pinv(product) @ jacp[idx, :].T
                     else:
                         j_inv = np.linalg.inv(product) @ jacp[idx, :].T
-                    
+                        
 
                     xvel = jacp[idx, :]@self.data.qvel 
                 # -------------------------------------------
                     Jacp_2 = jacp.copy()
-                    Jacp_dot = (Jacp_2[idx, :] - Jacp_1[idx, :]) / dt
+                    Jacp_dot = (Jacp_2[idx, :] - Jacp_1[idx, :]) / self.dt
                     Jacp_1 = Jacp_2.copy()
                 # -------------------------------------------
 
@@ -170,6 +171,7 @@ class MinimalService(Node) :
                     self.torques = -tau_pd
                 else :
                     self.torques = tau_imp
+                    
                 print(f'calculate : {self.timestamp}')
                 # for deg in self.positions_deg:
                 #     print(deg)
@@ -198,7 +200,7 @@ class MinimalService(Node) :
                 f_imp_list.append(tau_imp)
 
                 ee_list.append(np.array([ee_pos1, ee_pos2, ee_pos3]).reshape(1,9)[0])
-                print(np.array(forces_list)[0].shape)
+                
                 #Step the simulation.
                 mj.mj_step(self.model, self.data)
                 viewer.sync()
@@ -210,7 +212,7 @@ class MinimalService(Node) :
             force_list = np.array(force_list)
             forces_list = np.array(forces_list)
             ee_list = np.array(ee_list)
-            print(forces_list.shape)
+            
             # Saving the arrays to CSV files
             # np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/force_list.csv', force_list, delimiter=',')
             np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/forces_list.csv', forces_list, delimiter=',')

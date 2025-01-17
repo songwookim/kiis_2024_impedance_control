@@ -64,10 +64,10 @@ class MinimalService(Node) :
             cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
             response = self.send_request(self.cfg.dynamixel.ids, cur_deg_rad)
             # print(f"current position :\n\n {response.timestamp} \n\n")
-            torques = np.multiply(response.torques,9)
+            torques = np.multiply(response.torques,10)
             if response.timestamp > 5000 :
                 # self.controller.test_torqueinput(response.torques, 0)
-                print(f"\n\n res : {response.torques}")
+                # print(f"\n\n res : {response.torques}")
                 print(f"\nres : {(np.int64(torques).tolist())}\n\n")
                 
                 self.controller.test_torqueinput((np.int64(torques)))
