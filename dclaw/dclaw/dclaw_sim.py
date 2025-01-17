@@ -82,7 +82,7 @@ class MinimalService(Node) :
         # desired_stiffness = [[300, 0, 0],[0, 300, 0],[0, 0, 300]]
         desired_stiffness = np.eye(3) * 250
         desired_damping = np.eye(3) * 1
-        desired_inertia = np.eye(3) * 0.05 # compare 1 with 30
+        desired_inertia = np.eye(3) * 0.01 # compare 1 with 30
         sensor_constant = 2.5
         kp = 250
         kd = 1
@@ -213,8 +213,8 @@ class MinimalService(Node) :
             print(forces_list.shape)
             # Saving the arrays to CSV files
             # np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/force_list.csv', force_list, delimiter=',')
-            np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/forces_list.csv', forces_list, delimiter='\n')
-            np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/ee_list.csv', ee_list, delimiter='\n')
+            np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/forces_list.csv', forces_list, delimiter=',')
+            np.savetxt('/home/hanlab/Desktop/work_dir/plot_result/ee_list.csv', ee_list, delimiter=',')
             # f_imp_list = np.array(f_imp_list)
             # print(force_list)
             sim_time = range(time)

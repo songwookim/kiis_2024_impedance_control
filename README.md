@@ -26,7 +26,12 @@ ros2 run dclaw dclaw_sim
 
 ### miscellaneous
 ```
+colcon build --packages-select dclaw --symlink-install
+
 ros2 pkg list
 ros2 node list
 ros2 pkg executables
+
+ros2 topic list
+ros2 topic hz /topic_name 
 ```
