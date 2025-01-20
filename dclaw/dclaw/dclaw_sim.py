@@ -25,12 +25,6 @@ class MinimalService(Node) :
         rclpy.logging.get_logger('dclaw_sim_py_node').info('\n\n HIHI \n\n')
         # self.get_logger() or  Node.get_logger(self).info('\n\nhello world 3 !!\n\n')
 
-        # qos = rclpy.qos.QoSProfile(
-        #     reliability=rclpy.qos.QoSReliabilityPolicy.RELIABLE,
-        #     history=rclpy.qos.QoSHistoryPolicy.KEEP_LAST,
-        #     depth=10
-        # )
-        # self.srv = self.create_service(SetPositions, 'set_positions', self.get_present_pos, qos_profile=qos)
         self.srv = self.create_service(SetPositions, 'set_positions', self.get_present_pos)
         
         pkg_path = os.path.dirname(os.path.abspath(__name__)) # ~/<pkg_path>
@@ -87,7 +81,7 @@ class MinimalService(Node) :
         sensor_constant = 2.5
         kp = 250
         kd = 1
-        pd_flag = True
+        pd_flag = False 
 
         # -------------------------------------------------------------------------------------------------
         #Get error.
