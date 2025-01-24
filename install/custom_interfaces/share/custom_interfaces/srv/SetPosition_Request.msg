@@ -1,1 +1,0 @@
-/home/hanlab/workspace/kiis_2024/src/build/custom_interfaces/rosidl_cmake/srv/SetPosition_Request.msg

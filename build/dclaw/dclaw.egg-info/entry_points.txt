@@ -1,5 +1,0 @@
-[console_scripts]
-dclaw_real = dclaw.dclaw_real:main
-dclaw_sim = dclaw.dclaw_sim:main
-sensor_real = dclaw.sensor_real:main
-

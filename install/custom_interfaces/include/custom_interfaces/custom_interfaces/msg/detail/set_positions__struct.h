@@ -1,1 +1,0 @@
-/home/hanlab/workspace/kiis_2024/src/build/custom_interfaces/rosidl_generator_c/custom_interfaces/msg/detail/set_positions__struct.h
