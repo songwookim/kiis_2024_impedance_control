@@ -1,0 +1,9 @@
+source;share/dclaw/hook/pythonpath.ps1
+source;share/dclaw/hook/pythonpath.dsv
+source;share/dclaw/hook/pythonpath.sh
+source;share/dclaw/hook/ament_prefix_path.ps1
+source;share/dclaw/hook/ament_prefix_path.dsv
+source;share/dclaw/hook/ament_prefix_path.sh
+source;../../build/dclaw/share/dclaw/hook/pythonpath_develop.ps1
+source;../../build/dclaw/share/dclaw/hook/pythonpath_develop.dsv
+source;../../build/dclaw/share/dclaw/hook/pythonpath_develop.sh

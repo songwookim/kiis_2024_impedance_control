@@ -5,7 +5,7 @@ dynamixel:
   ids: [10,11,12,20,21,22,30,31,32]  # 사용하고자 하는 Dynamixel ID 리스트
   # ids: [10,11,12]  # 사용하고자 하는 Dynamixel ID 리스트
   device_name: "/dev/ttyUSB0"
-  baudrate: 57600
+  baudrate: 1000000
   protocol_version: 2.0
   torque_enable: 1
   torque_disable: 0

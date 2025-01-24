@@ -1,0 +1,10 @@
+# Constants
+# Request
+uint8[] ids
+float64[] positions
+float64[] sensordata
+
+---
+# Response
+float64[] torques
+uint64 timestamp

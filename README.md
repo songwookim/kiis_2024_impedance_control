@@ -13,15 +13,20 @@ pip install mujoco # 3.2.5
 ros2 run dclaw sensor_real
 ```
 
-### 2. Send joint state and receive torque
-```
-ros2 run dclaw dclaw_real
-```
-
 ### 3. Receive joint state from real robot and return torque
 ```
 ros2 run dclaw dclaw_sim
 ```
+
+### 3. Send joint state and receive torque
+```
+cat /sys/bus/usb-serial/devices/ttyUSB0/latency_timer 
+sudo vi /sys/bus/usb-serial/devices/ttyUSB0/latency_timer
+   # change to 16 -> 1
+
+ros2 run dclaw dclaw_real
+```
+
 
 
 ### miscellaneous

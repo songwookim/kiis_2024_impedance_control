@@ -1,0 +1,16 @@
+msg/GetSensordata.idl
+msg/GetSensordata.msg
+msg/SetPositions.idl
+msg/SetPositions.msg
+srv/GetPositions.idl
+srv/GetPositions.srv
+srv/GetPositions_Request.msg
+srv/GetPositions_Response.msg
+srv/SetPosition.idl
+srv/SetPosition.srv
+srv/SetPosition_Request.msg
+srv/SetPosition_Response.msg
+srv/SetPositions.idl
+srv/SetPositions.srv
+srv/SetPositions_Request.msg
+srv/SetPositions_Response.msg

@@ -26,7 +26,10 @@ class MMS101Controller:
         self.measure_max = config.mms101.measure_max
         self.debug_mode = config.mms101.debug
         self.sensors = config.mms101.sensors
-        self.n_samples = config.mms101.n_samples
+
+        self.n_samples = 0
+        self.sums = 0
+        self.contact_flag = 0
         self.n_sensors = config.mms101.n_sensors
 
         self.destAddr = (self.dest_ip, self.dest_port)
@@ -36,9 +39,9 @@ class MMS101Controller:
         self.sockOpen()
 
         self.offset = [ # from value .. for three sensor
-            [8.492, 2.408, -9.077, 0.02204, -0.03774, 0.00149],
-            [0.099, -0.597, -20.516, -0.03245, 0.00843, 0.00425],
-            [0.936, -6.477, -36.695, -0.04001, -0.01117, -0.00093],
+            [8.192, 2.408, -9.377, 0.02204, -0.03774, 0.00149],
+            [-0.249, -0.497, -21.916, -0.03245, 0.00843, 0.00425],
+            [0.536, -5.577, -34.795, -0.04001, -0.01117, -0.00093],
         ]
         # [8.36421440000005, 2.183672700000004, -10.713885600000088, 0.02242086500000042, -0.037813711999999736, -0.0010512370000000009],
         # [-0.04749409999999947, -0.7636865000000049, -22.082769699999872, -0.03188875300000068, 0.008093128999999978, 0.0027501949999999904],
@@ -46,6 +49,22 @@ class MMS101Controller:
         if self.n_sensors != 3:
             print("Error: Only 3 sensors are supported")
             sys.exit()
+
+        self.cmdReset()
+        self.cmdSelect()
+        self.cmdBoot()
+
+        while True:
+            status = self.cmdStatus()
+            if status[4] == 0x03:  # READY state
+                break
+            elif status[4] == 0x02:
+                # time.sleep(0.001)
+                # print("Waiting...")
+                pass
+            else:
+                print("BOOT Error")
+                sys.exit()
     
     def __del__(self):
         self.sockClose()
@@ -115,32 +134,15 @@ class MMS101Controller:
                 selected |= SENSOR_MAP[sens]
         return selected
 
-    def run(self):
-        print("Starting Measurement...")
-
-        self.cmdReset()
-        self.cmdSelect()
-        self.cmdBoot()
-
-        while True:
-            status = self.cmdStatus()
-            if status[4] == 0x03:  # READY state
-                break
-            elif status[4] == 0x02:
-                time.sleep(0.01)
-            else:
-                print("BOOT Error")
-                sys.exit()
+    def run(self, period):
+        # print("Starting Measurement...")
 
         self.cmdStart()
-        time.sleep(0.01)
+        time.sleep(0.0001)
 
         dataCounter = 0
         elapsTime = 0
         mms101data = np.zeros([self.n_sensors, 6])
-        sums = np.zeros([self.n_sensors, 6])
-        offset = self.offset
-        n_samples = 0 # number of samples
 
         # while dataCounter < self.measure_max:
         rData = self.cmdData()
@@ -150,7 +152,7 @@ class MMS101Controller:
             measCount = (rData[4] << 8) + rData[5]
             intervalTime = (rData[6] << 24) + (rData[7] << 16) + (rData[8] << 8) + rData[9]
             elapsTime += intervalTime / 1000000
-            
+
             for sens in range(self.n_sensors):
                 for axis in range(6):
                     base_index = (sens * 18) + (axis * 3) + 10
@@ -160,20 +162,43 @@ class MMS101Controller:
 
                     mms101data[sens][axis] /= 1000 if axis < 3 else 100000
 
-            # print(f'{dataCounter},{elapsTime:.3f},{intervalTime},{measCount}')
+            # Print debug information
+            # print(f'intervalTime : {intervalTime},{measCount}')
 
-            # for calibration
-            sums += np.array(mms101data)
-            n_samples += 1
+            # Accumulate sums for offset calculation
 
-            sensed_data = (np.array(mms101data)-np.array(offset))
-            return sensed_data
 
-            dataCounter += 1
-        else:
-            print('Error: Result data', len(rData))
-            return 0            
-        
+            # Calculate dynamic offset after collecting sufficient samples
+            # Apply the offset to correct the data
+            sensed_data = (np.array(mms101data) - np.array(self.offset))
+            if np.abs(sensed_data.sum()) > 0.1 and period > 5000 :
+                self.contact_flag = 1
+            else:
+                self.contact_flag = 0
+            print(f"{period} : {sensed_data.sum().round(2)}" )
+            print(f" is? : {self.contact_flag}" )
+            # if self.contact_flag != True:  
+            #     # 튀는 값 필터링
+            if period < 5000:
+                self.sums += mms101data
+                self.n_samples += 1      
+                if self.n_samples > 300: 
+                    self.offset = self.sums / self.n_samples  # Calculate the average offset
+                    self.n_samples = 0  # Reset the number of samples
+                    self.sums = 0
+            else :
+                if self.contact_flag == 0:
+                    self.sums += mms101data
+                    self.n_samples += 1  
+                if self.contact_flag == 0 :
+                    if self.n_samples > 300: 
+                        self.offset = self.sums / self.n_samples  # Calculate the average offset
+                        self.n_samples = 0  # Reset the number of samples
+                        self.sums = 0
+
+
+            return sensed_data        
+            
             
 
 

@@ -24,66 +24,61 @@ class MinimalService(Node) :
         self.controller = DynamixelControl(self.cfg.dynamixel)
         self.controller.connect()
         print("connected")
-        # self.srv = self.create_service(GetPosition, 'get_position', self.get_present_pos)
-        self.client = self.create_client(SetPositions, "set_positions")
 
+        self.timestep = 0.0001
+
+        # 1) sensor connection !
+        self.subscription = self.create_subscription(
+            GetSensordata, 'topic_sensordata', self.listener_callback, 10
+        )        
+        self.client = self.create_client(SetPositions, "set_positions")
+        self.get_logger().info("Subscribed to topic_sensordata.")
+
+        # 2) simulation feedback !
+        self.create_timer(self.timestep, self.send_service_callback)
+
+        
+
+
+    def send_service_callback(self):
         while not self.client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
             pass
-        print('server is ok')
         self.req = SetPositions.Request()
+        self.req.ids = self.cfg.dynamixel.ids   
 
-
-        self.subscription = self.create_subscription(
-            GetSensordata, 'topic_sensordata', self.listener_callback, 10
-        )
-
-        # # move topic listener
-        # self.subscription = self.create_subscription(
-        #     GetRobotCommand, 'topic_move_command', self.move_topic_listener, 10
-        # )
-        self.get_logger().info("Subscribed to topic_sensordata.")
-
-
-    def send_request(self, idx, cur_joint_pos_rad):
-        self.req.ids = idx
-        self.req.positions = cur_joint_pos_rad.tolist()
-        # print(f"\nsensordata : {self.sensordata}\n\n")
+        cur_deg = self.controller.get_joint_positions("rad") # need to change bulk_read        
+        cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
+        self.req.positions = cur_deg_rad.tolist()
         self.req.sensordata = self.sensordata.flatten().tolist()
-        self.future = self.client.call_async(self.req)
         
-        rclpy.spin_until_future_complete(self, self.future)
+        self.future = self.client.call_async(self.req)
+        self.future.add_done_callback(self.handle_service_callback)  
+        # rclpy.spin_until_future_complete(self, self.future)
 
         return self.future.result()
     
-    def ros(self):
-        while True :        
-            print("ros")
-            cur_deg = self.controller.get_joint_positions("rad")
+    def handle_service_callback(self, future):
+        response = future.result()
+        # print(f"current position :\n\n {response.torques} \n\n")
+        # torques = np.multiply(response.torques,10) # for papercup
+        torques = np.multiply(response.torques,2.5) # for papercup
+        
+        if response.timestamp > 5000 :
+            # self.controller.test_torqueinput(response.torques, 0)
+            # print(f"\n\n res : {response.torques}")
+            print(f"\nres : {(np.int64(torques).tolist())}\n\n")
             
-            cur_deg_rad = self.controller.dynamixel_pos_to_rad(cur_deg)
-            response = self.send_request(self.cfg.dynamixel.ids, cur_deg_rad)
-            print(f"current position :\n\n {response.torques} \n\n")
-            torques = np.multiply(response.torques,5)
-            if response.timestamp > 5000 :
-                # self.controller.test_torqueinput(response.torques, 0)
-                # print(f"\n\n res : {response.torques}")
-                print(f"\nres : {(np.int64(torques).tolist())}\n\n")
-                
-                self.controller.test_torqueinput((np.int64(torques)))
-                
-                # self.controller.test_torqueinput(np.int64(np.zeros(9)))
-                
-            # self.cur_deg = cur_deg
-
-    # def move_topic_listener(self, msg = None):
-    #     # self.controller.disable_torque()
-    #     pass
+            self.controller.test_torqueinput((np.int64(torques)))
+            
+            # self.controller.test_torqueinput(np.int64(np.zeros(9)))
+            
+        # self.cur_deg = cur_deg
         
     def listener_callback(self, msg = GetSensordata): # Sensor
         """토픽 콜백"""
         # self.controller.enable_torque()
-    
+        print("sensor !! \n")
         self.sensordata = np.array(list(msg.sensordata))
         # print(f"version : 11 {self.sensordata }\n")
         # self.controller.test_torqueinput([31,21,11], 0)
@@ -101,11 +96,17 @@ class MinimalService(Node) :
 def dclaw_read_py_node(cfg):
     rclpy.init(args=None)
     minimal_service = MinimalService(cfg)
-    t1 = threading.Thread(target=minimal_service.ros)
-    t2 = threading.Thread(target=minimal_service.listener_callback)
+    try :
+        rclpy.spin(minimal_service)
+    except KeyboardInterrupt:
+        minimal_service.destroy_node()
+        rclpy.shutdown()
+
+    # t1 = threading.Thread(target=minimal_service.ros)
+    # t2 = threading.Thread(target=minimal_service.listener_callback)
     # t3 = threading.Thread(target=minimal_service.move_topic_listener)
-    t1.start()
-    t2.start()
+    # t1.start()
+    # t2.start()
     # t3.start()
 
 @hydra.main(version_base=None, config_path= os.path.dirname(os.path.abspath(__name__))+"/src/dclaw/resource/robot_parameter", config_name="config")

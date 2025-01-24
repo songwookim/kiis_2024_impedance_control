@@ -18,21 +18,24 @@ class MinimalPublisher(Node):
     def __init__(self, cfg):
         super().__init__('sensor_node')
         self.cfg = cfg
-
+        self.mms101 = MMS101Controller(self.cfg)
+        self.timer_period = 0.0001
         self.publisher_ = self.create_publisher(GetSensordata, 'topic_sensordata', 10)
+        # self.create_callback_group(rclpy.callback_groups.ReentrantCallbackGroup())
+
+        self.timer = self.create_timer(self.timer_period, self.sensor_callback)
         # timer_period = 0.5  # seconds
-        while rclpy.ok():
-            self.sensor_callback(cfg)
-            
         self.i = 0
 
-    def sensor_callback(self, cfg):
+
+    def sensor_callback(self):          
         msg = GetSensordata()
-        mms101 = MMS101Controller(self.cfg)
-        sensordata = mms101.run()
+        # mms101 = MMS101Controller(self.cfg) # warning !!
+        sensordata = self.mms101.run(self.i)
         msg.sensordata = sensordata.flatten().tolist()
-        self.get_logger().info(f"{sensordata}\n\n")
-        # msg.sensordata = sensordata
+        
+        # self.get_logger().info(f"{sensordata}\n\n")
+        self.i += 1
         
         self.publisher_.publish(msg)
 
@@ -48,6 +51,5 @@ def main(config):
         rclpy.shutdown() # 4
 
 
-if main == "__main__":
-    mms101 = MMS101Controller()
-    mms101.run()
+if __name__ == "__main__":
+    main()
